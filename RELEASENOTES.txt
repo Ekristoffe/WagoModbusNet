@@ -1,0 +1,25 @@
+----------------------------------------------------------------------------
+--- WagoModbusNet - RELEASENOTES.txt                                 -------
+----------------------------------------------------------------------------
+Version: 1.0.1.1 (06.02.2013)
+- BugFix: FC1 ReadCoils, returns multiple times the status of first 8 coils
+- BugFix: FC2 ReadDiscreteInputs, returns multiple times the status of first 8 coils 
+
+
+Version: 1.0.1.0 (09.01.2013)
+- Add FC11 ReadCommEventCounter 
+
+Version: 1.0.0.0 (03.01.2013)
+- Add FC22 MaskWriteRegister 
+- Extend wmnRet.Value returns now ModbusExceptionCode instead of static -400
+
+
+Version: 0.0.3.8 (02.10.2012)
+- Add wmnConvert function to convert write data into ushort[]
+
+
+Version: 0.0.3.7 (27.09.2012)
+- Published
+
+
+/eof

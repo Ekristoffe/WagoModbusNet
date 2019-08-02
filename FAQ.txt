@@ -1,0 +1,68 @@
+----------------------------------------------------------------------------
+--- WagoModbusNet - FAQ.txt                                          -------
+----------------------------------------------------------------------------
+
+Frequently Ask Questions(FAQ)
+
+[Modbus]
+Q001: What protocol types are supported?
+    - ModbusTCP
+    - ModbusUDP
+    - ModbusRTU
+    - ModbusASCII
+
+
+Q002: What function code are supported?
+    - fc1_ReadCoils 
+    - fc2_ReadDiscreteInputs 
+    - fc3_ReadHoldingRegisters
+    - fc4_ReadInputRegisters
+    - fc5_WriteSingleCoil
+    - fc6_WriteSingleRegister
+    - fc11_GetCommEventCounter
+    - fc15_WriteMultipleCoils
+    - fc16_WriteMultipleRegisters
+    - fc22_MaskWriteRegister
+    - fc23_ReadWriteMultipleRegisters
+
+
+[Usage]
+Q101: What do I have to do to work with WagoModbusNet code class?
+    - Variante1: Add class file "WagoModbusNet.cs" to your project 
+    - Variante2: Add a refference to "WagoModbusNet.dll" to project
+    - Add namespace "using WagoModbusNet;"
+    - Enable network permission for your project 
+
+Q102: What frame work version is required? 
+    WagoModbusNet code class utilze net framework version 2.
+    You can use it with all frameworks >= version 2.
+
+
+[Hardware]
+Q201: Try to set physical outputs, no error - but nothing happens!
+    WAGO ethernet controller provide a "owner" policy for physical outputs.
+    The "owner" could be CoDeSys-Runtime or Fieldbus-Master.
+    Every time you download a PLC program the CoDeSys-Runtime becomes "owner" of physical outputs.
+    Use tool "Ethernet-Settings.exe" and "format" and "extract" filesystem is easiest way to assign Modbus-Master as "owner".
+    Alternativly you can "Login" with CoDeSys-IDE and perform "Reset(original)".
+
+
+[License]
+Q901: Can I use, modify or extend code?
+    YES, see below
+
+    Copyright (c) 2012 WAGO Kontakttechnik GmbH & Co.KG
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+    and associated documentation files (the "Software"), to deal in the Software without restriction, 
+    including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+    sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial 
+    portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT 
+    NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

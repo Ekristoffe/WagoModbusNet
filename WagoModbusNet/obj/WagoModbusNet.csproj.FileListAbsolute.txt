@@ -1,0 +1,15 @@
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\Release\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\Release\WagoModbusNet.pdb
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Release\ResolveAssemblyReference.cache
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Release\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Release\WagoModbusNet.pdb
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\Debug\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\Debug\WagoModbusNet.pdb
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Debug\ResolveAssemblyReference.cache
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Debug\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\Debug\WagoModbusNet.pdb
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\x64\Debug\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\bin\x64\Debug\WagoModbusNet.pdb
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\x64\Debug\ResolveAssemblyReference.cache
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\x64\Debug\WagoModbusNet.dll
+D:\Projekte\p00044 WagoModbusNet\WagoModbusNet\obj\x64\Debug\WagoModbusNet.pdb
