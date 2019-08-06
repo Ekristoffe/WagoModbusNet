@@ -1,6 +1,18 @@
 ----------------------------------------------------------------------------
 --- WagoModbusNet - RELEASENOTES.txt                                 -------
 ----------------------------------------------------------------------------
+Version: 1.1.0.2 (09.07.2019)
+- BugFix: ModbusMasterUdp - add the use of _connected in Connect()
+- BugFix: ModbusMasterUdp - check the status of _connected and the use of _autoConnect in Query()
+- BugFix: ModbusMasterUdp - add the use of _connected in Disconnect()
+- BugFix: ModbusMasterUdp - add Transaction-ID check in CheckResponse()
+- BugFix: ModbusMasterUdp - add UnitID(TCP/UDP) check in CheckResponse()
+- BugFix: ModbusMasterUdp - add Modbus-Function-Code check in CheckResponse()
+- BugFix: ModbusMasterRtu - add SlaveID(RTU/ASCII) check in CheckResponse()
+- BugFix: ModbusMasterRtu - add Modbus-Function-Code check in CheckResponse()
+- BugFix: ModbusMasterAscii - add SlaveID(RTU/ASCII) check in CheckResponse()
+- BugFix: ModbusMasterAscii - add Modbus-Function-Code check in CheckResponse()
+
 Version: 1.1.0.1 (10.02.2015)
 - BugFix: ModbusMasterTcp - receive buffer handling 
 
@@ -23,6 +35,5 @@ Version: 0.0.3.8 (02.10.2012)
 
 Version: 0.0.3.7 (27.09.2012)
 - Published
-
 
 /eof

@@ -26,12 +26,13 @@ namespace WMN_WinFormExample01
             mbm.Hostname = txtHost.Text;
             mbm.Port = Convert.ToUInt16(txtPort.Text);
             txtData.Text = "";
-            ReadBlock();
+            ReadHoldingRegister();
             //ReadInputRegister();
             //ReadDiscreteInputs();
             //ReadCoils();
             //ReadWriteMultipleRegisters();
             //GetCommEventCounter();
+            //ReadBlock();
         }
 
         private void GetCommEventCounter()
@@ -140,6 +141,26 @@ namespace WMN_WinFormExample01
         }
 
 
+        private void ReadHoldingRegister()
+        {
+            ushort[] readData;
+            wmnRet ret = mbm.ReadHoldingRegisters(Convert.ToByte(txtUnitId.Text),
+                                                    Convert.ToUInt16(txtReadAddress.Text),
+                                                    Convert.ToUInt16(txtReadCount.Text),
+                                                    out readData);
+            if (ret.Value == 0)
+            {
+                for (int i = 0; i < readData.Length; i++)
+                {
+                    txtData.Text += "Address[" + (Convert.ToUInt16(txtReadAddress.Text) + i).ToString() + "] Value: " + readData[i].ToString() + "; \r\n";
+                }
+            }
+            else
+            {
+                txtData.Text = ret.Text;
+            }
+        }
+
         private void ReadBlock()
         {
             ushort[] readData;
@@ -160,7 +181,6 @@ namespace WMN_WinFormExample01
                 txtData.Text = ret.Text;
             }
         }
-
 
 
         private void btnWriteRegister_Click(object sender, EventArgs e)
@@ -268,13 +288,16 @@ namespace WMN_WinFormExample01
             wmnRet ret = mbm.Connect(txtHost.Text, Convert.ToUInt16(txtPort.Text));
             if (ret.Value != 0)
             {
-                 MessageBox.Show(ret.Text);
+                txtData.Text = ret.Text;
             }
+            else
+                txtData.Text = "Connected";
         }
 
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             mbm.Disconnect();
+            txtData.Text = "Disconnected";
         }
 
         private void txtHost_TextChanged(object sender, EventArgs e)

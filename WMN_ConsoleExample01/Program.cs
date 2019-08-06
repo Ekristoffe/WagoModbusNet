@@ -10,11 +10,14 @@ namespace WMN_ConsoleExample01
     {
         static void Main(string[] args)
         {
-            ModbusMasterUdp mbTcp = new ModbusMasterTcp("192.168.1.16", 502);
+            Console.WriteLine("Enter the test IP address...");
+            string ipAddress = Console.ReadLine();
+            ModbusMasterUdp mbTcp = new ModbusMasterTcp(ipAddress, 502);
             int count = 1000; // Number of modbus request to process
             Stopwatch sw1 = new Stopwatch();
             Console.WriteLine("Press any key to run test...");
             Console.ReadKey();
+            Console.WriteLine("Test: " + count.ToString() + " ReadInputRegisters at IP address: " + ipAddress);
             sw1.Start();          
             wmnRet ret;
             ret = mbTcp.Connect();

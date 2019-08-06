@@ -2,22 +2,26 @@
 --- WagoModbusNet - README.txt                                       -------
 ----------------------------------------------------------------------------
 
-Description:    
+Description:
     WagoModbusNet provide easy to use Modbus-Master classes for TCP, UDP, RTU and ASCII.
     WagoModbusNet based on dot.net framework 2.0.
     WagoModbusNet.Masters do not throw any exception, all function returns a struct of type "wmnRet".
     For a list of supported function codes see "enum ModbusFunctionCodes".     
-   
+
 Author: WAGO Kontakttechnik GmbH & Co.KG
- 
-Typical pitfal:
-    You dial with a WAGO ethernet controller. Try to set outputs - but nothing happens!
-    WAGO ethernet controller provide a "owner" policy for physical outputs.
+
+Typical pitfall:
+    With 750-3xx or 750-8xx
+    You dial with a WAGO Ethernet controller. Try to set outputs - but nothing happens!
+    WAGO Ethernet controller provide a "owner" policy for physical outputs.
     The "owner" could be CoDeSys-Runtime or Fieldbus-Master.
     Every time you download a PLC program the CoDeSys-Runtime becomes "owner" of physical outputs.
-    Use tool "Ethernet-Settings.exe" and "format" and "extract" filesystem is easiest way to assign Modbus-Master as "owner".
-    Alternativly you can "Login" with CoDeSys-IDE and perform "Reset(original)".
-     
+    Use tool "WAGO Ethernet Settings" and do "Reset File System", it is the easiest way to assign Modbus-Master as "owner".
+    Alternatively you can "Login" with CoDeSys-IDE and perform "Reset(original)".
+
+    With 750-8xxx
+    By default there is no Modbus server available, you must use e!Cockpit to create your own Modbus server.
+
 License:
     Copyright (c) 2012 WAGO Kontakttechnik GmbH & Co.KG
 

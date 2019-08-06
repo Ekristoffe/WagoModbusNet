@@ -56,11 +56,13 @@ namespace WMN_WinFormExample02
             {
                 gbxSlave.Enabled = true;
                 //MessageBox .Show( "Connected with " + mbRtu.Portname);
+                txtData.Text = "Connected";
             }
             else
             {
                 gbxSlave.Enabled = false;
                 //MessageBox.Show("Could not open port: " + mbRtu.Portname);
+                txtData.Text = "Connection Failed";
             }            
         }
 
@@ -71,6 +73,7 @@ namespace WMN_WinFormExample02
         {
             mbm.Disconnect();
             gbxSlave.Enabled = false;
+            txtData.Text = "Disconnected";
         }
 
 

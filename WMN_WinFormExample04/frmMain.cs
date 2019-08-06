@@ -18,6 +18,7 @@ namespace WMN_WinFormExample04
         {
             InitializeComponent();
             mbmUdp = new ModbusMasterUdp();
+            mbmUdp.AutoConnect = true;
             mbmUdp.Port = Convert.ToUInt16(txtPort.Text);
         }
 

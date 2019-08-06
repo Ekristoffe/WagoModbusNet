@@ -18,6 +18,7 @@ namespace WMN_WinFormExample03
             InitializeComponent();
             cbxBoolValue.SelectedIndex = 0;            
             mbmUdp = new ModbusMasterUdp();
+            mbmUdp.AutoConnect = true;
             mbmUdp.Port = Convert.ToUInt16(txtPort.Text);
 
         }

@@ -5,7 +5,7 @@ Description:
     WagoModbusNet.Masters do not throw any exception, all function returns a struct of type 'wmnRet'.
     For a list of supported function codes see 'enum ModbusFunctionCodes'.    
   
-Version: 1.1.0.1 (10.02.2015)
+Version: 1.1.0.2 (10.07.2019)
    
 Author: WAGO Kontakttechnik GmbH & Co.KG
   
@@ -722,6 +722,8 @@ namespace WagoModbusNet
             _sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, _timeout);
             _sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, _timeout);
+            // Successful connected
+            _connected = true;
             return new wmnRet(0, "Successful executed"); 
         }
 
@@ -740,13 +742,13 @@ namespace WagoModbusNet
 
         public virtual void Disconnect()
         {
-            //Close socket
+            //Close socket and free ressources 
             if (_sock != null)
             {
                 _sock.Close();
                 _sock = null;
             }
-           
+            _connected = false;
         }
         protected Socket _sock;
         protected IPAddress _ip = null;
@@ -765,9 +767,13 @@ namespace WagoModbusNet
             {
                 return new wmnRet(-301 ,"DNS error: Could not resolve Ip-Address for " + _hostname );
             }
-            if (!_connected)
+            if (!_connected && _autoConnect)
             {
                 Connect(); // Connect will succesful in any case because it just create a socket instance
+            }
+            if (!_connected)
+            {
+                return new wmnRet(-500, "Error: 'Not connected, call Connect()' ");
             }
             try
             {
@@ -792,7 +798,7 @@ namespace WagoModbusNet
 
                     int byteCount = _sock.ReceiveFrom(tmpBuf, 0, tmpBuf.Length, SocketFlags.None, ref epRemote);
 
-                    return CheckResponse(tmpBuf, byteCount, out respPdu);                    
+                    return CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, byteCount, out respPdu);                    
                 }
                 catch (Exception e)
                 {
@@ -808,7 +814,7 @@ namespace WagoModbusNet
             }
         }
 
-        protected virtual wmnRet CheckResponse(byte[] respRaw, int respRawLength, out byte[] respPdu)
+        protected virtual wmnRet CheckResponse(byte reqUnitID, byte reqFcCode, byte[] respRaw, int respRawLength, out byte[] respPdu)
         {
             respPdu = null;
             // Check minimal response length of 8 byte
@@ -816,17 +822,38 @@ namespace WagoModbusNet
             {
                 return new wmnRet(-500, "Error: Invalid response telegram, do not receive minimal length of 8 byte");
             }
-            //Decode act telegram lengh
+            // Decode Transaction-ID
+            ushort respTransactionId = (ushort)((ushort)respRaw[1] | (ushort)((ushort)(respRaw[0] << 8)));
+            // Check Transaction-ID
+            if (respTransactionId != _transactionId)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Transaction ID doesn't match");
+            }
+            // Decode act telegram lengh
             ushort respPduLength = (ushort)((ushort)respRaw[5] | (ushort)((ushort)(respRaw[4] << 8)));
             // Check all bytes received 
             if (respRawLength < respPduLength + 6)
             {
                 return new wmnRet(-500, "Error: Invalid response telegram, do not receive complied telegram");
             }
+            // Decode UnitID(TCP/UDP)
+            byte respUnitID = respRaw[6];
+            // Check UnitID(TCP/UDP)
+            if (respUnitID != reqUnitID)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Unit ID doesn't match");
+            }
             // Is response a "modbus exception response"
             if ((respRaw[7] & 0x80) > 0)
             {
                 return new wmnRet((int)respRaw[8], "Modbus exception received: " + ((ModbusExceptionCodes)respRaw[8]).ToString());
+            }
+            // Decode Modbus-Function-Code
+            byte respFcCode = respRaw[7];
+            // Check Modbus-Function-Code
+            if (respFcCode != reqFcCode)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Function Code doesn't match");
             }
             // Strip ADU header and copy response PDU into output buffer 
             respPdu = new byte[respPduLength];
@@ -999,7 +1026,7 @@ namespace WagoModbusNet
                     respPduLen = (int)(tmpBuf[4] << 8 | tmpBuf[5]);
                 }while (rxCountTotal < respPduLen + 6);
                 
-                return CheckResponse(tmpBuf, rxCountTotal, out respPdu);
+                return CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, rxCountTotal, out respPdu);
             }
             catch (Exception e)
             {
@@ -1131,6 +1158,7 @@ namespace WagoModbusNet
 
         public virtual void Disconnect()
         {
+            //Close port and free ressources
             if (_sp != null)
             {
                 _sp.Close();
@@ -1198,13 +1226,13 @@ namespace WagoModbusNet
                  }
                  else
                  {
-                     ret = CheckResponse(_respRaw, _respRawLength, out respPdu);
+                     ret = CheckResponse(reqAdu[0], reqAdu[1], _respRaw, _respRawLength, out respPdu);
                  }
              }
              return ret;
         }
 
-        protected virtual wmnRet CheckResponse(byte[] respRaw, int respRawLength, out byte[] respPdu)
+        protected virtual wmnRet CheckResponse(byte reqSlaveID, byte reqFcCode, byte[] respRaw, int respRawLength, out byte[] respPdu)
         {
             respPdu = null;
             // Check minimal response length 
@@ -1212,10 +1240,24 @@ namespace WagoModbusNet
             {                
                 return new wmnRet(-500, "Error: Invalid response telegram, do not receive minimal length of 5 byte");
             }
+            // Decode SlaveID(RTU/ASCII)
+            byte respSlaveID = respRaw[0];
+            // Check SlaveID(RTU/ASCII)
+            if (respSlaveID != reqSlaveID)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Slave ID doesn't match");
+            }
             // Is response a "modbus exception response"
             if ((respRaw[1] & 0x80) > 0)
             {                
-                return new wmnRet((int)respRaw[2], "Modbus exception received: " + ((ModbusExceptionCodes)respRaw[2]).ToString());                    
+                return new wmnRet((int)respRaw[2], "Modbus exception received: " + ((ModbusExceptionCodes)respRaw[2]).ToString());
+            }
+            // Decode Modbus-Function-Code
+            byte respFcCode = respRaw[1];
+            // Check Modbus-Function-Code
+            if (respFcCode != reqFcCode)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Function Code doesn't match");
             }
             // Check CRC
             byte[] crc16 = CRC16.CalcCRC16(respRaw, respRawLength - 2);
@@ -1229,7 +1271,7 @@ namespace WagoModbusNet
             {
                 respPdu[i] = respRaw[i];
             }
-            return new wmnRet(0, "Successful executed");     
+            return new wmnRet(0, "Successful executed");
         }
 
         protected override wmnRet BuildRequestAdu(byte[] reqPdu, out byte[] reqAdu)       
@@ -1312,7 +1354,7 @@ namespace WagoModbusNet
             return new wmnRet(0, "Successful executed");                  
         }
 
-        protected override wmnRet CheckResponse(byte[] respRaw, int respRawLength, out byte[] respPdu)
+        protected override wmnRet CheckResponse(byte reqSlaveID, byte reqFcCode, byte[] respRaw, int respRawLength, out byte[] respPdu)
         {
             respPdu = null;
             // Check minimal response length 
@@ -1348,11 +1390,25 @@ namespace WagoModbusNet
             if (buffer[buffer.Length-1] != lrc)
             {
                 return new wmnRet(-501, "Error: Invalid response telegram, LRC check failed"); 
-            }                                
+            }
+            // Decode SlaveID(RTU/ASCII)
+            byte respSlaveID = buffer[0];
+            // Check SlaveID(RTU/ASCII)
+            if (respSlaveID != reqSlaveID)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Slave ID doesn't match");
+            }
             // Is response a "modbus exception response"
             if ((buffer[1] & 0x80) > 0)
             {
-                return new wmnRet((int)respRaw[2], "Modbus exception received: " + ((ModbusExceptionCodes)buffer[2]).ToString());  
+                return new wmnRet((int)buffer[2], "Modbus exception received: " + ((ModbusExceptionCodes)buffer[2]).ToString());
+            }
+            // Decode Modbus-Function-Code
+            byte respFcCode = buffer[1];
+            // Check Modbus-Function-Code
+            if (respFcCode != reqFcCode)
+            {
+                return new wmnRet(-500, "Error: Invalid response telegram, Function Code doesn't match");
             }
             // Strip LRC and copy response PDU into output buffer 
             respPdu = new byte[buffer.Length - 1];
