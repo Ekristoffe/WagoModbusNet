@@ -54,9 +54,9 @@
     - Add namespace "using WagoModbusNet;"
     - Enable network permission for your project 
 
-2. Q102: What frame work version is required? 
-    WagoModbusNet code class utilize net framework version 2.
-    You can use it with all frameworks >= version 2.
+2. Q102: What frame work version is required?
+    - WagoModbusNet code class utilize net framework version 2.
+    - You can use it with all frameworks >= version 2.
 
 
 [Hardware]
