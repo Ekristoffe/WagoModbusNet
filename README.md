@@ -97,8 +97,8 @@
 	- BugFix: ModbusMasterTcp - add the use of dispose in Disconnect()
 	- BugFix: ModbusMasterRtu - add the use of dispose in Disconnect()
 	- BugFix: ModbusMasterUdp - replace "private static ushort _transactionId" with 
-										"private static ushort _globalTransactionId" and
-										add "protected ushort _requestTransactionId" for local use
+					"private static ushort _globalTransactionId" and
+					add "protected ushort _requestTransactionId" for local use
 
 	Version: 1.1.0.2 (09.07.2019)
 	- BugFix: ModbusMasterUdp - add the use of _connected in Connect()
