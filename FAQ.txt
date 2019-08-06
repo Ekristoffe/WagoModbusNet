@@ -24,6 +24,7 @@ Q002: What function code are supported?
     - fc16_WriteMultipleRegisters
     - fc22_MaskWriteRegister
     - fc23_ReadWriteMultipleRegisters
+	- fc66_ReadBlock
 
 
 [Usage]

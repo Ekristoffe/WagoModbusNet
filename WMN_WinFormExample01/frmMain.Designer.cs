@@ -106,7 +106,7 @@
             this.txtHost.Name = "txtHost";
             this.txtHost.Size = new System.Drawing.Size(100, 20);
             this.txtHost.TabIndex = 9;
-            this.txtHost.Text = "192.168.1.16";
+            this.txtHost.Text = "192.168.1.17";
             // 
             // lblPort
             // 
@@ -167,7 +167,7 @@
             this.txtWriteAddress.Name = "txtWriteAddress";
             this.txtWriteAddress.Size = new System.Drawing.Size(71, 20);
             this.txtWriteAddress.TabIndex = 13;
-            this.txtWriteAddress.Text = "12288";
+            this.txtWriteAddress.Text = "32768";
             // 
             // btnWriteRegister
             // 
@@ -226,7 +226,7 @@
             this.txtReadCount.Name = "txtReadCount";
             this.txtReadCount.Size = new System.Drawing.Size(55, 20);
             this.txtReadCount.TabIndex = 14;
-            this.txtReadCount.Text = "5";
+            this.txtReadCount.Text = "200";
             // 
             // txtReadAddress
             // 
@@ -234,7 +234,7 @@
             this.txtReadAddress.Name = "txtReadAddress";
             this.txtReadAddress.Size = new System.Drawing.Size(71, 20);
             this.txtReadAddress.TabIndex = 13;
-            this.txtReadAddress.Text = "12288";
+            this.txtReadAddress.Text = "0";
             // 
             // btnRead
             // 

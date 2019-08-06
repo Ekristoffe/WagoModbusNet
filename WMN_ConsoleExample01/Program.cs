@@ -16,11 +16,17 @@ namespace WMN_ConsoleExample01
             Console.WriteLine("Press any key to run test...");
             Console.ReadKey();
             sw1.Start();          
-            wmnRet ret = mbTcp.Connect();
+            wmnRet ret;
+            ret = mbTcp.Connect();
             if (ret.Value != 0)
             {
                 Console.WriteLine(ret.Text);
             }
+            ret = mbTcp.Connect();
+            if (ret.Value != 0)
+            {
+                Console.WriteLine(ret.Text);
+            }    
             else
             {                
                 ushort[] data;

@@ -11,20 +11,23 @@ namespace WMN_WinFormExample01
 {
     public partial class frmMain : Form
     {
-        private ModbusMasterUdp mbmUdp;
+        //private ModbusMasterUdp mbm;
+        private ModbusMasterTcp mbm;
         
         public frmMain()
         {
             InitializeComponent();
-            mbmUdp = new ModbusMasterUdp();
+            //mbm = new ModbusMasterUdp();
+            mbm = new ModbusMasterTcp();
         }
  
         private void btnRead_Click(object sender, EventArgs e)
         {
-            mbmUdp.Hostname = txtHost.Text;
-            mbmUdp.Port = Convert.ToUInt16(txtPort.Text);
+            mbm.Hostname = txtHost.Text;
+            mbm.Port = Convert.ToUInt16(txtPort.Text);
             txtData.Text = "";
-            ReadInputRegister();
+            ReadBlock();
+            //ReadInputRegister();
             //ReadDiscreteInputs();
             //ReadCoils();
             //ReadWriteMultipleRegisters();
@@ -35,7 +38,7 @@ namespace WMN_WinFormExample01
         {
             ushort status;
             ushort eventCount;
-            wmnRet ret = mbmUdp.GetCommEventCounter( Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.GetCommEventCounter( Convert.ToByte(txtUnitId.Text),
                                                     out status,
                                                     out eventCount);
             if (ret.Value == 0)
@@ -54,7 +57,7 @@ namespace WMN_WinFormExample01
             ushort[] writeData = new ushort[2];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
             writeData[1] = 2222;
-            wmnRet ret = mbmUdp.ReadWriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.ReadWriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
                                                             Convert.ToUInt16(txtReadAddress.Text),
                                                             Convert.ToUInt16(txtReadCount.Text),
                                                             Convert.ToUInt16(txtWriteAddress.Text),
@@ -78,7 +81,7 @@ namespace WMN_WinFormExample01
         private void ReadDiscreteInputs()
         {
             bool[] readData;           
-            wmnRet ret = mbmUdp.ReadDiscreteInputs( Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.ReadDiscreteInputs( Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
@@ -98,7 +101,7 @@ namespace WMN_WinFormExample01
         private void ReadCoils()
         {
             bool[] readData;
-            wmnRet ret = mbmUdp.ReadCoils(  Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.ReadCoils(  Convert.ToByte(txtUnitId.Text),
                                             Convert.ToUInt16(txtReadAddress.Text),
                                             Convert.ToUInt16(txtReadCount.Text),
                                             out readData);
@@ -119,7 +122,7 @@ namespace WMN_WinFormExample01
         private void ReadInputRegister()
         {
             ushort[] readData;           
-            wmnRet ret = mbmUdp.ReadInputRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.ReadInputRegisters(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
@@ -136,10 +139,34 @@ namespace WMN_WinFormExample01
             }
         }
 
+
+        private void ReadBlock()
+        {
+            ushort[] readData;
+            wmnRet ret = mbm.ReadBlock(Convert.ToByte(txtUnitId.Text),
+                                                    Convert.ToUInt16(txtReadAddress.Text),
+                                                    Convert.ToUInt16(txtReadCount.Text),
+                                                    out readData);
+            if (ret.Value == 0)
+            {
+                /*for (int i = 0; i < readData.Length; i++)
+                {
+                    txtData.Text += "Address[" + (Convert.ToUInt16(txtReadAddress.Text) + i).ToString() + "] Value: " + readData[i].ToString() + "; \r\n";
+                }*/
+                txtData.Text = "Successful executed";
+            }
+            else
+            {
+                txtData.Text = ret.Text;
+            }
+        }
+
+
+
         private void btnWriteRegister_Click(object sender, EventArgs e)
         {
-            mbmUdp.Hostname = txtHost.Text;
-            mbmUdp.Port = Convert.ToUInt16(txtPort.Text);
+            mbm.Hostname = txtHost.Text;
+            mbm.Port = Convert.ToUInt16(txtPort.Text);
             WriteMultipleRegisters();
             //WriteSingleRegister();
             //WriteSingleCoil();
@@ -152,7 +179,7 @@ namespace WMN_WinFormExample01
             ushort andMask = Convert.ToUInt16(txtWriteValue.Text);
             //ushort andMask = 0x0000;
             ushort orMask = 0x0000;
-            wmnRet ret = mbmUdp.MaskWriteRegister(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.MaskWriteRegister(Convert.ToByte(txtUnitId.Text),
                                                   Convert.ToUInt16(txtWriteAddress.Text),
                                                   andMask, 
                                                   orMask);
@@ -202,7 +229,7 @@ namespace WMN_WinFormExample01
             writeData[33] = true;
             writeData[34] = false;
             writeData[35] = true; 
-            wmnRet ret = mbmUdp.WriteMultipleCoils(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.WriteMultipleCoils(Convert.ToByte(txtUnitId.Text),
                                                    Convert.ToUInt16(txtWriteAddress.Text),
                                                    writeData);
             txtData.Text = ret.Text;
@@ -212,7 +239,7 @@ namespace WMN_WinFormExample01
         {
             ushort[] writeData = new ushort[1];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet ret = mbmUdp.WriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.WriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
                                                         Convert.ToUInt16(txtWriteAddress.Text),
                                                         writeData);
             txtData.Text = ret.Text;
@@ -221,7 +248,7 @@ namespace WMN_WinFormExample01
         private void WriteSingleRegister()
         {
             ushort writeData = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet ret = mbmUdp.WriteSingleRegister(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.WriteSingleRegister(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtWriteAddress.Text),
                                                     writeData);
             txtData.Text = ret.Text;
@@ -230,7 +257,7 @@ namespace WMN_WinFormExample01
         private void WriteSingleCoil()
         {
             bool writeData = Convert.ToBoolean(txtWriteValue.Text);
-            wmnRet ret = mbmUdp.WriteSingleCoil(Convert.ToByte(txtUnitId.Text),
+            wmnRet ret = mbm.WriteSingleCoil(Convert.ToByte(txtUnitId.Text),
                                                 Convert.ToUInt16(txtWriteAddress.Text),
                                                 writeData);
             txtData.Text = ret.Text;
@@ -238,7 +265,7 @@ namespace WMN_WinFormExample01
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            wmnRet ret = mbmUdp.Connect(txtHost.Text, Convert.ToUInt16(txtPort.Text));
+            wmnRet ret = mbm.Connect(txtHost.Text, Convert.ToUInt16(txtPort.Text));
             if (ret.Value != 0)
             {
                  MessageBox.Show(ret.Text);
@@ -247,7 +274,12 @@ namespace WMN_WinFormExample01
 
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
-            mbmUdp.Disconnect();
+            mbm.Disconnect();
+        }
+
+        private void txtHost_TextChanged(object sender, EventArgs e)
+        {
+
         }
 
    

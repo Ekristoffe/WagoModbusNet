@@ -5,7 +5,7 @@ Description:
     WagoModbusNet.Masters do not throw any exception, all function returns a struct of type 'wmnRet'.
     For a list of supported function codes see 'enum ModbusFunctionCodes'.    
   
-Version: 1.0.1.0 (09.01.2013)
+Version: 1.1.0.1 (10.02.2015)
    
 Author: WAGO Kontakttechnik GmbH & Co.KG
   
@@ -61,7 +61,8 @@ namespace WagoModbusNet
         fc15_WriteMultipleCoils = 15,
         fc16_WriteMultipleRegisters = 16,
         fc22_MaskWriteRegister = 22,
-        fc23_ReadWriteMultipleRegisters = 23
+        fc23_ReadWriteMultipleRegisters = 23,
+        fc66_ReadBlock = 66
     };
 
     public enum ModbusExceptionCodes : byte
@@ -418,7 +419,40 @@ namespace WagoModbusNet
             return ret;
         }
 
+        /// <summary>
+        /// FC66 - ReadBlock
+        /// WAGO specific Modbus extension for reading up to 32000 registers with one request.
+        /// Only supported for transport layer TCP and UDP
+        /// </summary>
+        /// <param name="id">Unit-Id or Slave-Id depending underlaying transport layer</param>
+        /// <param name="startAddress">     </param>
+        /// <param name="readCount">      </param>
+        /// <param name="data">out ushort[]</param>
+        /// <returns>wmnRet</returns>
+        public wmnRet ReadBlock(byte id, ushort startAddress, ushort readCount, out ushort[] data)
+        {
+            data = null;
+            byte[] responsePdu; //Response PDU
+            // Build common part of modbus request, decorate it with transport layer specific header, send request and get response PDU back 
+            wmnRet ret = SendModbusRequest(id, ModbusFunctionCodes.fc66_ReadBlock, startAddress, readCount, 0, 0, null, out responsePdu);
+            if (ret.Value == 0)
+            {
+                //Strip PDU header and convert data into ushort[]
+                
+                byte[] tmp = new byte[2];
+                int count = (ushort)(responsePdu[3] | (responsePdu[2] << 8));
 
+                data = new ushort[count];
+                for (int i = 0; i < count/2; i++)
+                {
+                    tmp[0] = responsePdu[5 + (2 * i)];
+                    tmp[1] = responsePdu[4 + (2 * i)];
+                    data[i] = BitConverter.ToUInt16(tmp, 0);
+                }
+                
+            }
+            return ret;
+        }
 
         // Build common part of modbus request, decorate it with transport layer specific header, send request and get response PDU back 
         public wmnRet SendModbusRequest(byte id, ModbusFunctionCodes functionCode, ushort readAddress, ushort readCount, ushort writeAddress, ushort writeCount, byte[] writeData, out byte[] responsePdu)
@@ -461,6 +495,7 @@ namespace WagoModbusNet
                 case ModbusFunctionCodes.fc2_ReadDiscreteInputs:
                 case ModbusFunctionCodes.fc3_ReadHoldingRegisters:
                 case ModbusFunctionCodes.fc4_ReadInputRegisters:
+                case ModbusFunctionCodes.fc66_ReadBlock:
                     reqPdu = new byte[6];
                     // Build request header 
                     reqPdu[0] = id;                         // ID: SlaveID(RTU/ASCII) or UnitID(TCP/UDP)
@@ -587,6 +622,7 @@ namespace WagoModbusNet
                         reqPdu[11 + i] = writeData[i];
                     }
                     break;
+
             }
             return new wmnRet(0, "Successful executed");
         }
@@ -719,6 +755,12 @@ namespace WagoModbusNet
         protected override wmnRet Query(byte[] reqAdu, out byte[] respPdu)
         {
             respPdu = null;
+            if (reqAdu[7] == (byte)ModbusFunctionCodes.fc66_ReadBlock) //Check for FC66 - ReadBlock
+            {
+                int readcount = ((reqAdu[10] << 8) | reqAdu[11]);
+                if (readcount > 750) //Check ReadCount exceed max UDP-Package size of 1500 byte 
+                    return new wmnRet(-310, "UDP error: ReadCount exceed max UDP-Package size of 1500 byte" );
+            }
             if (_ip == null)
             {
                 return new wmnRet(-301 ,"DNS error: Could not resolve Ip-Address for " + _hostname );
@@ -742,7 +784,7 @@ namespace WagoModbusNet
                     return new wmnRet(-300, "NetException: " + e.Message );
                 }
  
-                byte[] tmpBuf = new byte[255]; //Receive buffer
+                byte[] tmpBuf = new byte[1500]; //Receive buffer                
                 try
                 {
                     // Remote EndPoint to capture the identity of responding host.                    
@@ -942,12 +984,22 @@ namespace WagoModbusNet
                 // Send request sync
                 _sock.Send(reqAdu, 0, reqAdu.Length, SocketFlags.None);
 
-                byte[] tmpBuf = new byte[255]; //Receive buffer
+                byte[] tmpBuf = new byte[65000]; //Receive buffer
+                int rxCountTotal = 0;
+                int respPduLen = 0; 
 
-                // Try to receive response 
-                int byteCount = _sock.Receive(tmpBuf, 0, tmpBuf.Length, SocketFlags.None);
-
-                return CheckResponse(tmpBuf, byteCount, out respPdu);  
+                // Try to receive complied response
+                do
+                {
+                    int rxCountActual = _sock.Receive(tmpBuf, rxCountTotal, (tmpBuf.Length - rxCountTotal), SocketFlags.None);                    
+                    if (rxCountActual == 0)
+                        break;
+                    rxCountTotal += rxCountActual;
+                    // Extract response length information
+                    respPduLen = (int)(tmpBuf[4] << 8 | tmpBuf[5]);
+                }while (rxCountTotal < respPduLen + 6);
+                
+                return CheckResponse(tmpBuf, rxCountTotal, out respPdu);
             }
             catch (Exception e)
             {
@@ -1180,21 +1232,28 @@ namespace WagoModbusNet
             return new wmnRet(0, "Successful executed");     
         }
 
-         protected override wmnRet BuildRequestAdu(byte[] reqPdu, out byte[] reqAdu)       
-         {
-             reqAdu = new byte[reqPdu.Length +2];  // Contains the modbus request protocol data unit(PDU) togehther with additional information for ModbusRTU
-             // Copy request PDU
-             for (int i = 0; i < reqPdu.Length; i++)
-             {
-                 reqAdu[i] = reqPdu[i];
-             }
-             // Calc CRC16
-             byte[] crc16 = CRC16.CalcCRC16(reqAdu, reqAdu.Length-2);
-             // Append CRC
-             reqAdu[reqAdu.Length - 2] = crc16[0];
-             reqAdu[reqAdu.Length - 1] = crc16[1];
+        protected override wmnRet BuildRequestAdu(byte[] reqPdu, out byte[] reqAdu)       
+        {
+            // Check for unsupported function codes by transport layer RTU and ASCII        
+            if (reqPdu[1] == (byte)ModbusFunctionCodes.fc66_ReadBlock)
+            {
+                reqAdu = null;
+                return new wmnRet(-205, "Error: Unsupported FunctionCode for transport layer RTU");
+            }
+            // Decorate request pdu                
+            reqAdu = new byte[reqPdu.Length +2];  // Contains the modbus request protocol data unit(PDU) togehther with additional information for ModbusRTU
+            // Copy request PDU
+            for (int i = 0; i < reqPdu.Length; i++)
+            {
+                reqAdu[i] = reqPdu[i];
+            }
+            // Calc CRC16
+            byte[] crc16 = CRC16.CalcCRC16(reqAdu, reqAdu.Length-2);
+            // Append CRC
+            reqAdu[reqAdu.Length - 2] = crc16[0];
+            reqAdu[reqAdu.Length - 1] = crc16[1];
 
-             return new wmnRet(0, "Successful executed");
+            return new wmnRet(0, "Successful executed");
          }
     }
     #endregion
@@ -1212,6 +1271,13 @@ namespace WagoModbusNet
         
         protected override wmnRet BuildRequestAdu(byte[] reqPdu, out byte[] reqAdu)        
         {
+            // Check for unsupported function codes by transport layer ASCII        
+            if (reqPdu[1] == (byte)ModbusFunctionCodes.fc66_ReadBlock)
+            {
+                reqAdu = null;
+                return new wmnRet(-206, "Error: Unsupported FunctionCode for transport layer ASCII");
+            }
+            // Decorate request pdu   
             reqAdu = new byte[((reqPdu.Length + 1) * 2) + 3];  // Contains the modbus request protocol data unit(PDU) togehther with additional information for ModbusASCII
             // Insert START_OF_FRAME_CHAR's
             reqAdu[0] = 0x3A;                   // START_OF_FRAME_CHAR   
