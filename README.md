@@ -11,11 +11,13 @@
 
 # Typical pitfall:
     With 750-3xx or 750-8xx
-    You dial with a WAGO Ethernet controller. Try to set outputs - but nothing happens!
+    You dial with a WAGO Ethernet controller.
+	Try to set outputs - but nothing happens!
     WAGO Ethernet controller provide a "owner" policy for physical outputs.
     The "owner" could be CoDeSys-Runtime or Fieldbus-Master.
     Every time you download a PLC program the CoDeSys-Runtime becomes "owner" of physical outputs.
-    Use tool "WAGO Ethernet Settings" and do "Reset File System", it is the easiest way to assign Modbus-Master as "owner".
+    Use tool "WAGO Ethernet Settings" and do "Reset File System",
+	it is the easiest way to assign Modbus-Master as "owner".
     Alternatively you can "Login" with CoDeSys-IDE and perform "Reset(original)".
 
     With 750-8xxx
@@ -94,7 +96,9 @@
 	- BugFix: ModbusMasterUdp - add the use of dispose in Disconnect()
 	- BugFix: ModbusMasterTcp - add the use of dispose in Disconnect()
 	- BugFix: ModbusMasterRtu - add the use of dispose in Disconnect()
-	- BugFix: ModbusMasterUdp - replace "private static ushort _transactionId" with "private static ushort _globalTransactionId" and add "protected ushort _requestTransactionId" for local use
+	- BugFix: ModbusMasterUdp - replace "private static ushort _transactionId" with 
+										"private static ushort _globalTransactionId" and
+										add "protected ushort _requestTransactionId" for local use
 
 	Version: 1.1.0.2 (09.07.2019)
 	- BugFix: ModbusMasterUdp - add the use of _connected in Connect()
