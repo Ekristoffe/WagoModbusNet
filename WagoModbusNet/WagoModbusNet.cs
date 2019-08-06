@@ -750,7 +750,7 @@ namespace WagoModbusNet
             }
             _connected = false;
         }
-        protected Socket _sock;
+        private protected Socket _sock;
         protected IPAddress _ip = null;
 
         // Send request and and wait for response
@@ -796,9 +796,15 @@ namespace WagoModbusNet
                     // Remote EndPoint to capture the identity of responding host.                    
                     EndPoint epRemote = (EndPoint)ipepRemote;
 
-                    int byteCount = _sock.ReceiveFrom(tmpBuf, 0, tmpBuf.Length, SocketFlags.None, ref epRemote);
+                    wmnRet wmnReceiveRet = new wmnRet(0, "");
+                    do
+                    {
+                        int byteCount = _sock.ReceiveFrom(tmpBuf, 0, tmpBuf.Length, SocketFlags.None, ref epRemote);
+                        wmnReceiveRet = CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, byteCount, out respPdu);
+                    }
+                    while (wmnReceiveRet.Value != 0);
 
-                    return CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, byteCount, out respPdu);                    
+                    return wmnReceiveRet;
                 }
                 catch (Exception e)
                 {
@@ -1012,21 +1018,28 @@ namespace WagoModbusNet
                 _sock.Send(reqAdu, 0, reqAdu.Length, SocketFlags.None);
 
                 byte[] tmpBuf = new byte[65000]; //Receive buffer
-                int rxCountTotal = 0;
-                int respPduLen = 0; 
-
-                // Try to receive complied response
+                wmnRet wmnReceiveRet = new wmnRet(0, "");
                 do
                 {
-                    int rxCountActual = _sock.Receive(tmpBuf, rxCountTotal, (tmpBuf.Length - rxCountTotal), SocketFlags.None);                    
-                    if (rxCountActual == 0)
-                        break;
-                    rxCountTotal += rxCountActual;
-                    // Extract response length information
-                    respPduLen = (int)(tmpBuf[4] << 8 | tmpBuf[5]);
-                }while (rxCountTotal < respPduLen + 6);
-                
-                return CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, rxCountTotal, out respPdu);
+                    int rxCountTotal = 0;
+                    int respPduLen = 0; 
+
+                    // Try to receive complied response
+                    do
+                    {
+                        int rxCountActual = _sock.Receive(tmpBuf, rxCountTotal, (tmpBuf.Length - rxCountTotal), SocketFlags.None);                    
+                        if (rxCountActual == 0)
+                            break;
+                        rxCountTotal += rxCountActual;
+                        // Extract response length information
+                        respPduLen = (int)(tmpBuf[4] << 8 | tmpBuf[5]);
+                    }while (rxCountTotal < respPduLen + 6);
+
+                    wmnReceiveRet = CheckResponse(reqAdu[6], reqAdu[7], tmpBuf, rxCountTotal, out respPdu);
+                }
+                while (wmnReceiveRet.Value != 0);
+
+                return wmnReceiveRet;
             }
             catch (Exception e)
             {
