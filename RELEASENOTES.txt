@@ -1,6 +1,16 @@
 ----------------------------------------------------------------------------
 --- WagoModbusNet - RELEASENOTES.txt                                 -------
 ----------------------------------------------------------------------------
+
+Version: 1.1.0.4 (01.08.2019)
+- Global cleanup and use the C# Coding Standards and Naming Conventions
+
+Version: 1.1.0.3 (23.07.2019)
+- BugFix: ModbusMasterUdp - add the use of dispose in Disconnect()
+- BugFix: ModbusMasterTcp - add the use of dispose in Disconnect()
+- BugFix: ModbusMasterRtu - add the use of dispose in Disconnect()
+- BugFix: ModbusMasterUdp - replace "private static ushort _transactionId" with "private static ushort _globalTransactionId" and add "protected ushort _requestTransactionId" for local use
+
 Version: 1.1.0.2 (09.07.2019)
 - BugFix: ModbusMasterUdp - add the use of _connected in Connect()
 - BugFix: ModbusMasterUdp - check the status of _connected and the use of _autoConnect in Query()

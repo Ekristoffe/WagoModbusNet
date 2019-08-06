@@ -19,26 +19,26 @@ namespace WMN_ConsoleExample01
             Console.ReadKey();
             Console.WriteLine("Test: " + count.ToString() + " ReadInputRegisters at IP address: " + ipAddress);
             sw1.Start();          
-            wmnRet ret;
-            ret = mbTcp.Connect();
-            if (ret.Value != 0)
+            wmnRet _wmnReceiveRet;
+            _wmnReceiveRet = mbTcp.Connect();
+            if (_wmnReceiveRet.Value != 0)
             {
-                Console.WriteLine(ret.Text);
+                Console.WriteLine(_wmnReceiveRet.Text);
             }
-            ret = mbTcp.Connect();
-            if (ret.Value != 0)
+            _wmnReceiveRet = mbTcp.Connect();
+            if (_wmnReceiveRet.Value != 0)
             {
-                Console.WriteLine(ret.Text);
+                Console.WriteLine(_wmnReceiveRet.Text);
             }    
             else
             {                
                 ushort[] data;
                 for (int i = 0; i < count; i++)
                 {
-                    ret = mbTcp.ReadInputRegisters(0, 12288, 100, out data);
-                    if (ret.Value != 0)
+                    _wmnReceiveRet = mbTcp.ReadInputRegisters(0, 12288, 100, out data);
+                    if (_wmnReceiveRet.Value != 0)
                     {
-                        Console.WriteLine("Error in cycle " + i.ToString() + " - Message: " + ret.Text);
+                        Console.WriteLine("Error in cycle " + i.ToString() + " - Message: " + _wmnReceiveRet.Text);
                         break;
                     }
                 }

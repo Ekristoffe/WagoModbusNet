@@ -59,8 +59,8 @@ namespace WMN_WinFormExample04
             writeData[29] = false;
             writeData[30] = false;
             writeData[31] = false;
-            wmnRet ret = mbmUdp.WriteMultipleCoils(0, 0, writeData);
-            txtData.Text = ret.Text;
+            wmnRet _wmnReceiveRet = mbmUdp.WriteMultipleCoils(0, 0, writeData);
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void btnReadCoils_Click(object sender, EventArgs e)
@@ -69,8 +69,8 @@ namespace WMN_WinFormExample04
             mbmUdp.Hostname = txtHost.Text;
             bool[] readData;
             ushort readAddr = Convert.ToUInt16(txtReadCoilAddress.Text);
-            wmnRet ret = mbmUdp.ReadCoils(0, readAddr, 32, out readData);
-            if (ret.Value == 0)
+            wmnRet _wmnReceiveRet = mbmUdp.ReadCoils(0, readAddr, 32, out readData);
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -79,7 +79,7 @@ namespace WMN_WinFormExample04
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 

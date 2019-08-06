@@ -39,16 +39,16 @@ namespace WMN_WinFormExample01
         {
             ushort status;
             ushort eventCount;
-            wmnRet ret = mbm.GetCommEventCounter( Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.GetCommEventCounter( Convert.ToByte(txtUnitId.Text),
                                                     out status,
                                                     out eventCount);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 txtData.Text += "Status := " + status.ToString() + "; EventCount := " + eventCount.ToString() + "; \r\n";
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }            
         }
 
@@ -58,13 +58,13 @@ namespace WMN_WinFormExample01
             ushort[] writeData = new ushort[2];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
             writeData[1] = 2222;
-            wmnRet ret = mbm.ReadWriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadWriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
                                                             Convert.ToUInt16(txtReadAddress.Text),
                                                             Convert.ToUInt16(txtReadCount.Text),
                                                             Convert.ToUInt16(txtWriteAddress.Text),
                                                             writeData,
                                                             out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -73,7 +73,7 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
@@ -82,11 +82,11 @@ namespace WMN_WinFormExample01
         private void ReadDiscreteInputs()
         {
             bool[] readData;           
-            wmnRet ret = mbm.ReadDiscreteInputs( Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadDiscreteInputs( Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -95,18 +95,18 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
         private void ReadCoils()
         {
             bool[] readData;
-            wmnRet ret = mbm.ReadCoils(  Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadCoils(  Convert.ToByte(txtUnitId.Text),
                                             Convert.ToUInt16(txtReadAddress.Text),
                                             Convert.ToUInt16(txtReadCount.Text),
                                             out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -115,7 +115,7 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
@@ -123,11 +123,11 @@ namespace WMN_WinFormExample01
         private void ReadInputRegister()
         {
             ushort[] readData;           
-            wmnRet ret = mbm.ReadInputRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadInputRegisters(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -136,7 +136,7 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
@@ -144,11 +144,11 @@ namespace WMN_WinFormExample01
         private void ReadHoldingRegister()
         {
             ushort[] readData;
-            wmnRet ret = mbm.ReadHoldingRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadHoldingRegisters(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -157,18 +157,18 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
         private void ReadBlock()
         {
             ushort[] readData;
-            wmnRet ret = mbm.ReadBlock(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.ReadBlock(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtReadAddress.Text),
                                                     Convert.ToUInt16(txtReadCount.Text),
                                                     out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 /*for (int i = 0; i < readData.Length; i++)
                 {
@@ -178,7 +178,7 @@ namespace WMN_WinFormExample01
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
@@ -199,11 +199,11 @@ namespace WMN_WinFormExample01
             ushort andMask = Convert.ToUInt16(txtWriteValue.Text);
             //ushort andMask = 0x0000;
             ushort orMask = 0x0000;
-            wmnRet ret = mbm.MaskWriteRegister(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.MaskWriteRegister(Convert.ToByte(txtUnitId.Text),
                                                   Convert.ToUInt16(txtWriteAddress.Text),
                                                   andMask, 
                                                   orMask);
-            txtData.Text = ret.Text;
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void WriteMultipleCoils()
@@ -249,46 +249,46 @@ namespace WMN_WinFormExample01
             writeData[33] = true;
             writeData[34] = false;
             writeData[35] = true; 
-            wmnRet ret = mbm.WriteMultipleCoils(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.WriteMultipleCoils(Convert.ToByte(txtUnitId.Text),
                                                    Convert.ToUInt16(txtWriteAddress.Text),
                                                    writeData);
-            txtData.Text = ret.Text;
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void WriteMultipleRegisters()
         {
             ushort[] writeData = new ushort[1];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet ret = mbm.WriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.WriteMultipleRegisters(Convert.ToByte(txtUnitId.Text),
                                                         Convert.ToUInt16(txtWriteAddress.Text),
                                                         writeData);
-            txtData.Text = ret.Text;
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void WriteSingleRegister()
         {
             ushort writeData = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet ret = mbm.WriteSingleRegister(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.WriteSingleRegister(Convert.ToByte(txtUnitId.Text),
                                                     Convert.ToUInt16(txtWriteAddress.Text),
                                                     writeData);
-            txtData.Text = ret.Text;
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void WriteSingleCoil()
         {
             bool writeData = Convert.ToBoolean(txtWriteValue.Text);
-            wmnRet ret = mbm.WriteSingleCoil(Convert.ToByte(txtUnitId.Text),
+            wmnRet _wmnReceiveRet = mbm.WriteSingleCoil(Convert.ToByte(txtUnitId.Text),
                                                 Convert.ToUInt16(txtWriteAddress.Text),
                                                 writeData);
-            txtData.Text = ret.Text;
+            txtData.Text = _wmnReceiveRet.Text;
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            wmnRet ret = mbm.Connect(txtHost.Text, Convert.ToUInt16(txtPort.Text));
-            if (ret.Value != 0)
+            wmnRet _wmnReceiveRet = mbm.Connect(txtHost.Text, Convert.ToUInt16(txtPort.Text));
+            if (_wmnReceiveRet.Value != 0)
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
             else
                 txtData.Text = "Connected";

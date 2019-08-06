@@ -51,7 +51,7 @@ namespace WMN_WinFormExample02
             mbm.Parity = (Parity)Enum.Parse(typeof(Parity), cbxParity.SelectedItem.ToString());
             mbm.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbxStopbits.SelectedItem.ToString());
             mbm.Handshake = (Handshake)Enum.Parse(typeof(Handshake), cbxHandshake.SelectedItem.ToString());
-            mbm.Connected = true;
+            mbm.Connect();
             if (mbm.Connected)
             {
                 gbxSlave.Enabled = true;
@@ -63,7 +63,7 @@ namespace WMN_WinFormExample02
                 gbxSlave.Enabled = false;
                 //MessageBox.Show("Could not open port: " + mbRtu.Portname);
                 txtData.Text = "Connection Failed";
-            }            
+            }
         }
 
 
@@ -81,11 +81,11 @@ namespace WMN_WinFormExample02
         {
             ushort[] readData;
             txtData.Text = "";
-            wmnRet ret = mbm.ReadInputRegisters( Convert.ToByte(txtSlaveId.Text), 
+            wmnRet _wmnReceiveRet = mbm.ReadInputRegisters( Convert.ToByte(txtSlaveId.Text), 
                                                     Convert.ToUInt16(txtReadAddress.Text), 
                                                     Convert.ToUInt16(txtReadCount.Text), 
                                                     out readData);
-            if (ret.Value == 0)
+            if (_wmnReceiveRet.Value == 0)
             {
                 for (int i = 0; i < readData.Length; i++)
                 {
@@ -94,7 +94,7 @@ namespace WMN_WinFormExample02
             }
             else
             {
-                txtData.Text = ret.Text;
+                txtData.Text = _wmnReceiveRet.Text;
             }
         }
 
@@ -102,10 +102,10 @@ namespace WMN_WinFormExample02
         {
             ushort[] writeData = new ushort[1];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet ret = mbm.WriteMultipleRegisters(Convert.ToByte(txtSlaveId.Text), 
+            wmnRet _wmnReceiveRet = mbm.WriteMultipleRegisters(Convert.ToByte(txtSlaveId.Text), 
                                                     Convert.ToUInt16(txtWriteAddress.Text),                                                   
                                                     writeData);
-            txtData.Text = ret.Text; ;
+            txtData.Text = _wmnReceiveRet.Text; ;
         }
     }
 
