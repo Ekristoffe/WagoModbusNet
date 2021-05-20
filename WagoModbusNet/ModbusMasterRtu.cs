@@ -48,6 +48,14 @@ namespace WagoModbusNet
 
         public ModbusMasterRtu()
         {
+            Ascii = false;
+        }
+
+        private bool _ascii = false;
+        public bool Ascii
+        {
+            get { return _ascii; }
+            set { _ascii = value; }
         }
 
         private string _portName = "COM1"; // Name of serial interface like "COM23" 
@@ -158,10 +166,12 @@ namespace WagoModbusNet
             _responseBuffer.Initialize();
             int _responseBufferLength = 0;
             _serialPort.ReadTimeout = _timeout;
-            int tmpTimeout = 50; // Milliseconds
+            int _tmpTimeout = 50; // Milliseconds
             if (_baudrate < 9600)
-                tmpTimeout = (int)((10000 / _baudrate) + 50);
-            
+                _tmpTimeout = (int)((10000 / _baudrate) + 50);
+
+            int _expectedResponseLength = CalculateResponceLength(requestAdu);
+
             // TODO: Check if we can't instead of waiting for a timeout, check the data received and compare with the espected size
             try
             {
@@ -169,13 +179,45 @@ namespace WagoModbusNet
                 do
                 {
                     _responseBuffer[_responseBufferLength] = (byte)_serialPort.ReadByte();
-                    _responseBufferLength++;
 
-                    // Change receive timeout after first received byte
-                    if (_serialPort.ReadTimeout != tmpTimeout)
-                        _serialPort.ReadTimeout = tmpTimeout;
+                    // First we need to check if we have the right slave who answer else we stay at the first buffer byte
+                    if (Ascii)
+                    { 
+                        if (((_responseBufferLength == 0) && (_responseBuffer[0] == requestAdu[0])) || ((_responseBuffer[0] == requestAdu[0]) && (_responseBuffer[1] == requestAdu[1])))
+                        {
+                            _responseBufferLength++;
 
-                } while (true);
+                            // Change receive timeout after first received byte
+                            if (_serialPort.ReadTimeout != _tmpTimeout)
+                                _serialPort.ReadTimeout = _tmpTimeout;
+
+                            // Then we need to check if we have a "modbus exception response"
+                            if ((_responseBufferLength > 2) && ((_responseBuffer[2] & 0x80) > 0))
+                                _expectedResponseLength = 5;
+                        }
+                        else
+                            _responseBufferLength = 0;
+                    }
+                    else
+                    {
+                        if (_responseBuffer[0] == requestAdu[0])
+                        {
+                            _responseBufferLength++;
+
+                            // Change receive timeout after first received byte
+                            if (_serialPort.ReadTimeout != _tmpTimeout)
+                                _serialPort.ReadTimeout = _tmpTimeout;
+
+                            // Then we need to check if we have a "modbus exception response"
+                            if ((_responseBufferLength > 1) && ((_responseBuffer[1] & 0x80) > 0))
+                                _expectedResponseLength = 5;
+                        }
+                        else
+                            _responseBufferLength = 0;
+                    }
+
+                } while (_responseBufferLength < _expectedResponseLength);
+                _serialPort.ReadTimeout = 0;
             }
             catch (TimeoutException)
             {
@@ -191,6 +233,44 @@ namespace WagoModbusNet
                     _responsePdu = CheckResponse(requestAdu[0], requestAdu[1], _responseBuffer, _responseBufferLength);
             }
             return _responsePdu;
+        }
+        protected int CalculateResponceLength(byte[] requestAdu)
+        {
+            int _expectedResponseLength = 0;
+            switch (requestAdu[1])
+            {
+                case (byte)Enums.ModbusFunctionCodes.Fc1_ReadCoils:
+                case (byte)Enums.ModbusFunctionCodes.Fc2_ReadDiscreteInputs:
+                    _expectedResponseLength = ((requestAdu[4] << 8) | requestAdu[5]); // Quantity of coils
+                    _expectedResponseLength = ((_expectedResponseLength % 8) == 0) ? (_expectedResponseLength / 8) : ((_expectedResponseLength / 8) + 1); // Coils to byte
+                    _expectedResponseLength = _expectedResponseLength + 5; // + Header (3) and CRC (2)
+                    break;
+
+                case (byte)Enums.ModbusFunctionCodes.Fc3_ReadHoldingRegisters:
+                case (byte)Enums.ModbusFunctionCodes.Fc4_ReadInputRegisters:
+                case (byte)Enums.ModbusFunctionCodes.Fc23_ReadWriteMultipleRegisters:
+                    _expectedResponseLength = ((requestAdu[4] << 8) | requestAdu[5]); // Quantity of coils
+                    _expectedResponseLength = _expectedResponseLength * 2; // Registers to byte
+                    _expectedResponseLength = _expectedResponseLength + 5; // + Header (3) and CRC (2)
+                    break;
+                // TODO: Continue
+                case (byte)Enums.ModbusFunctionCodes.Fc5_WriteSingleCoil:
+                case (byte)Enums.ModbusFunctionCodes.Fc6_WriteSingleRegister:
+                case (byte)Enums.ModbusFunctionCodes.Fc11_GetCommEventCounter:
+                case (byte)Enums.ModbusFunctionCodes.Fc15_WriteMultipleCoils:
+                case (byte)Enums.ModbusFunctionCodes.Fc16_WriteMultipleRegisters:
+                    _expectedResponseLength = 8; // + Header (2), data (4) and CRC (2)
+                    break;
+                case (byte)Enums.ModbusFunctionCodes.Fc22_MaskWriteRegister:
+                    _expectedResponseLength = 10; // + Header (2), data (6) and CRC (2)
+                    break;
+                // case (byte)Enums.ModbusFunctionCodes.Fc66_ReadBlock:
+                // case (byte)Enums.ModbusFunctionCodes.Fc8_Diagnostics:
+                default:
+                    throw new Exceptions.Modbus.IllegalFunctionException();
+            }
+
+            return _expectedResponseLength;
         }
 
         protected virtual byte[] CheckResponse(byte requestSlaveID, byte requestFcCode, byte[] responseBuffer, int responseBufferLength)

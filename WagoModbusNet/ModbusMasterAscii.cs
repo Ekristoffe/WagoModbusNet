@@ -45,6 +45,7 @@ namespace WagoModbusNet
 
         public ModbusMasterAscii()
         {
+            Ascii = true;
         }
 
         protected override byte[] BuildRequestAdu(byte[] requestPdu)
@@ -112,15 +113,15 @@ namespace WagoModbusNet
             }
 
             // Calculate LRC
-            byte lrc = 0;
+            byte _lrc = 0;
             for (int _index = 0; _index < _buffer.Length - 1; _index++)
             {
-                lrc += _buffer[_index];
+                _lrc += _buffer[_index];
             }
-            lrc = (byte)(lrc * (-1));
+            _lrc = (byte)(_lrc * (-1));
 
             // Check LRC
-            if (_buffer[_buffer.Length - 1] != lrc)
+            if (_buffer[_buffer.Length - 1] != _lrc)
                 throw new Exceptions.InvalidResponseTelegramException("Error: Invalid response telegram, LRC check failed");
 
             // Decode SlaveID(RTU/ASCII)

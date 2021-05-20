@@ -139,7 +139,11 @@ namespace WagoModbusNet
             //Close socket and free ressources 
             if (_socket != null)
             {
-                _socket.Close();
+                if (_socket.Connected)
+                {
+                    _socket.Close();
+                }
+                ((IDisposable)_socket).Dispose();
                 _socket = null;
             }
             _connected = false;

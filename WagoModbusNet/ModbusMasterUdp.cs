@@ -48,14 +48,16 @@ namespace WagoModbusNet
 {
     public class ModbusMasterUdp : ModbusMaster
     {
-        private static ushort _transactionId = 4711;
-        private ushort TransactionId
+        private static ushort _globalTransactionId = 4711;
+        protected ushort _requestTransactionId;
+        private ushort GlobalTransactionId
         {
             get
             {
-                return ++_transactionId;
+                return ++_globalTransactionId;
             }
         }
+
 
         protected string _hostname = "";
         protected IPAddress _ip = null;
@@ -156,7 +158,11 @@ namespace WagoModbusNet
             //Close socket and free ressources 
             if (_socket != null)
             {
-                _socket.Close();
+                if (_socket.Connected)
+                {
+                    _socket.Close();
+                }
+                ((IDisposable)_socket).Dispose();
                 _socket = null;
             }
             _connected = false;
@@ -167,7 +173,7 @@ namespace WagoModbusNet
         {
            byte[] _responsePdu = null;
 
-            if (requestAdu[7] == (byte)Enums.ModbusFunctionCodes.Fc66_ReadBlock) //Check for FC66 - ReadBlock
+            if (requestAdu[7] == (byte)Enums.ModbusFunctionCodes.Fc66_ReadBlock) // Check for FC66 - ReadBlock
             {
                 int _readcount = ((requestAdu[10] << 8) | requestAdu[11]);
                 if (_readcount > 750) //Check ReadCount exceed max UDP-Package size of 1500 byte 
@@ -195,9 +201,9 @@ namespace WagoModbusNet
                 // Remote EndPoint to capture the identity of responding host.
                 EndPoint _epRemote = (EndPoint)_ipepRemote;
 
-                int byteCount = _socket.ReceiveFrom(_receiveBuffer, 0, _receiveBuffer.Length, SocketFlags.None, ref _epRemote);
+                int _byteCount = _socket.ReceiveFrom(_receiveBuffer, 0, _receiveBuffer.Length, SocketFlags.None, ref _epRemote);
 
-                _responsePdu = CheckResponse(requestAdu[6], requestAdu[7], _receiveBuffer, byteCount);
+                _responsePdu = CheckResponse(requestAdu[6], requestAdu[7], _receiveBuffer, _byteCount);
             }
             finally
             {
@@ -217,15 +223,15 @@ namespace WagoModbusNet
                 throw new Exceptions.InvalidResponseTelegramException("Error: Invalid response telegram. Did not receive minimal length of 8 bytes.");
 
             // Decode Transaction-ID
-            ushort respTransactionId = (ushort)((ushort)responseBuffer[1] | (ushort)((ushort)(responseBuffer[0] << 8)));
+            ushort _responseTransactionId = (ushort)((ushort)responseBuffer[1] | (ushort)((ushort)(responseBuffer[0] << 8)));
             // Check Transaction-ID
-            if (respTransactionId != _transactionId)
+            if (_responseTransactionId != _requestTransactionId)
                 throw new Exceptions.InvalidResponseTelegramException("Error: Invalid response telegram, Slave ID doesn't match");
 
             // Decode act telegram lengh
-            ushort respPduLength = (ushort)((ushort)responseBuffer[5] | (ushort)((ushort)(responseBuffer[4] << 8)));
+            ushort _responsePduLength = (ushort)((ushort)responseBuffer[5] | (ushort)((ushort)(responseBuffer[4] << 8)));
             // Check all bytes received 
-            if (responseBufferLength < respPduLength + 6)
+            if (responseBufferLength < _responsePduLength + 6)
                 throw new Exceptions.InvalidResponseTelegramException("Error: Invalid response telegram, do not receive complied telegram");
 
             // Decode UnitID(TCP/UDP)
@@ -245,8 +251,8 @@ namespace WagoModbusNet
                 throw new Exceptions.InvalidResponseTelegramException("Error: Invalid response telegram, Function Code doesn't match");
 
             // Strip ADU header and copy response PDU into output buffer 
-            byte[] _responsePdu = new byte[respPduLength];
-            for (int _index = 0; _index < respPduLength; _index++)
+            byte[] _responsePdu = new byte[_responsePduLength];
+            for (int _index = 0; _index < _responsePduLength; _index++)
             {
                 _responsePdu[_index] = responseBuffer[6 + _index];
             }
@@ -259,7 +265,8 @@ namespace WagoModbusNet
             byte[] _requestAdu = new byte[6 + requestPdu.Length]; // Contains the modbus request protocol data unit(PDU) togehther with additional information for ModbusTCP
             byte[] _help; // Used to convert ushort into bytes
 
-            _help = BitConverter.GetBytes(this.TransactionId);
+            _requestTransactionId = this.GlobalTransactionId;
+            _help = BitConverter.GetBytes(_requestTransactionId);
             _requestAdu[0] = _help[1];						// Transaction-ID -Hi
             _requestAdu[1] = _help[0];						// Transaction-ID -Lo
             _requestAdu[2] = 0x00;						    // Protocol-ID - allways zero
