@@ -59,32 +59,34 @@ namespace WMN_WinFormExample04
             writeData[29] = false;
             writeData[30] = false;
             writeData[31] = false;
-            wmnRet _wmnReceiveRet = mbmUdp.WriteMultipleCoils(0, 0, writeData);
-            txtData.Text = _wmnReceiveRet.Text;
+            try
+            {
+                mbmUdp.WriteMultipleCoils(0, 0, writeData);
+                txtData.Text = "Successful executed";
+            }
+            catch (Exception ex)
+            {
+                txtData.Text = ex.Message;
+            }
         }
 
         private void btnReadCoils_Click(object sender, EventArgs e)
         {
             txtData.Text = "";
             mbmUdp.Hostname = txtHost.Text;
-            bool[] readData;
             ushort readAddr = Convert.ToUInt16(txtReadCoilAddress.Text);
-            wmnRet _wmnReceiveRet = mbmUdp.ReadCoils(0, readAddr, 32, out readData);
-            if (_wmnReceiveRet.Value == 0)
+            try
             {
+                bool[] readData = mbmUdp.ReadCoils(0, readAddr, 32);
                 for (int i = 0; i < readData.Length; i++)
                 {
                     txtData.Text += "Address[" + (i).ToString() + "] Value: " + readData[i].ToString() + "; \r\n";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                txtData.Text = _wmnReceiveRet.Text;
+                txtData.Text = ex.Message;
             }
         }
-
-
-
-
     }
 }

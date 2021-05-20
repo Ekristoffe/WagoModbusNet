@@ -8,7 +8,7 @@
     <ProjectGuid>{08875771-EF44-435E-9CBC-CE963563C72F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WagoModNet</RootNamespace>
+    <RootNamespace>WagoModbusNet</RootNamespace>
     <AssemblyName>WagoModbusNet</AssemblyName>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>
@@ -34,9 +34,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\ModbusExceptionCodes.cs" />
+    <Compile Include="Enums\ModbusFunctionCodes.cs" />
+    <Compile Include="Exceptions\ConnectionTimeoutException.cs" />
+    <Compile Include="Exceptions\InvalidResponseTelegramException.cs" />
+    <Compile Include="Exceptions\IpDnsException.cs" />
+    <Compile Include="Exceptions\IpUdpException.cs" />
+    <Compile Include="Exceptions\ModbusException.cs" />
+    <Compile Include="Exceptions\Modbus\AcknowledgeException.cs" />
+    <Compile Include="Exceptions\Modbus\GatewayPathUnavailableException.cs" />
+    <Compile Include="Exceptions\Modbus\GatewayTargetDeviceFailedToRespondException.cs" />
+    <Compile Include="Exceptions\Modbus\IllegalDataAddressException.cs" />
+    <Compile Include="Exceptions\Modbus\IllegalDataValueException.cs" />
+    <Compile Include="Exceptions\Modbus\IllegalFunctionException.cs" />
+    <Compile Include="Exceptions\Modbus\MemoryParityErrorException.cs" />
+    <Compile Include="Exceptions\Modbus\NegativeAcknowledgeException.cs" />
+    <Compile Include="Exceptions\Modbus\SlaveDeviceBusyException.cs" />
+    <Compile Include="Exceptions\Modbus\SlaveDeviceFailureException.cs" />
+    <Compile Include="Exceptions\NotConnectedException.cs" />
+    <Compile Include="ModbusMaster.cs" />
+    <Compile Include="ModbusMasterAscii.cs" />
+    <Compile Include="ModbusMasterRtu.cs" />
+    <Compile Include="ModbusMasterTcp.cs" />
+    <Compile Include="ModbusMasterUdp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WagoModbusNet.cs" />
+    <Compile Include="Utilities\CRC16.cs" />
+    <Compile Include="Utilities\wmnConvert.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

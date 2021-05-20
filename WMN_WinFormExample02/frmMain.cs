@@ -51,19 +51,26 @@ namespace WMN_WinFormExample02
             mbm.Parity = (Parity)Enum.Parse(typeof(Parity), cbxParity.SelectedItem.ToString());
             mbm.StopBits = (StopBits)Enum.Parse(typeof(StopBits), cbxStopbits.SelectedItem.ToString());
             mbm.Handshake = (Handshake)Enum.Parse(typeof(Handshake), cbxHandshake.SelectedItem.ToString());
-            mbm.Connect();
+            try
+            {
+                mbm.Connect();
+            }
+            catch (Exception ex)
+            {
+                txtData.Text = ex.Message;
+            }
             if (mbm.Connected)
             {
+                txtData.Text = "Connected";
                 gbxSlave.Enabled = true;
                 //MessageBox .Show( "Connected with " + mbRtu.Portname);
-                txtData.Text = "Connected";
             }
             else
             {
+                txtData.Text = "Connection Failed";
                 gbxSlave.Enabled = false;
                 //MessageBox.Show("Could not open port: " + mbRtu.Portname);
-                txtData.Text = "Connection Failed";
-            }
+            }            
         }
 
 
@@ -79,33 +86,39 @@ namespace WMN_WinFormExample02
 
         private void btnRead_Click(object sender, EventArgs e)
         {
-            ushort[] readData;
             txtData.Text = "";
-            wmnRet _wmnReceiveRet = mbm.ReadInputRegisters( Convert.ToByte(txtSlaveId.Text), 
-                                                    Convert.ToUInt16(txtReadAddress.Text), 
-                                                    Convert.ToUInt16(txtReadCount.Text), 
-                                                    out readData);
-            if (_wmnReceiveRet.Value == 0)
+            try
             {
+                ushort[] readData = mbm.ReadInputRegisters(Convert.ToByte(txtSlaveId.Text),
+                                                    Convert.ToUInt16(txtReadAddress.Text),
+                                                    Convert.ToUInt16(txtReadCount.Text));
                 for (int i = 0; i < readData.Length; i++)
                 {
                     txtData.Text = txtData.Text + "Address[" + (Convert.ToUInt16(txtReadAddress.Text) + i).ToString() + "] Value: " + readData[i].ToString() + "; \r\n";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                txtData.Text = _wmnReceiveRet.Text;
+                txtData.Text = ex.Message;
             }
         }
 
         private void btnWriteRegister_Click(object sender, EventArgs e)
         {
+            txtData.Text = "";
             ushort[] writeData = new ushort[1];
             writeData[0] = Convert.ToUInt16(txtWriteValue.Text);
-            wmnRet _wmnReceiveRet = mbm.WriteMultipleRegisters(Convert.ToByte(txtSlaveId.Text), 
+            try
+            {
+                mbm.WriteMultipleRegisters(Convert.ToByte(txtSlaveId.Text), 
                                                     Convert.ToUInt16(txtWriteAddress.Text),                                                   
                                                     writeData);
-            txtData.Text = _wmnReceiveRet.Text; ;
+                txtData.Text = "Successful executed";
+            }
+            catch (Exception ex)
+            {
+                txtData.Text = ex.Message;
+            }
         }
     }
 
